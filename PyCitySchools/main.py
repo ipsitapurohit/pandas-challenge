@@ -72,12 +72,8 @@ school_data_complete['average_reading_score'] = school_data_complete['reading_sc
 
 # Calculate the percentage passing math, reading, and overall passing
 school_data_complete['passing_math'] = ((school_data_complete['math_score'] >= 70) * 100)
-#school_data_complete['passing_math']  = school_data_complete['passing_math'].round(2)
 school_data_complete['passing_reading']= ((school_data_complete['reading_score'] >= 70) * 100)
-#school_data_complete['passing_reading'] = school_data_complete['passing_reading'].round(2)
-
 school_data_complete['passing_overall'] = ((school_data_complete['passing_math'] & school_data_complete['passing_reading']))
-#school_data_complete['passing_overall'] = school_data_complete['passing_overall'].round(2)
 
 school_summary = school_data_complete.groupby(['school_name','type']).agg({
     'size': 'count',
@@ -102,8 +98,131 @@ school_summary['%_Passing_Math'] = school_summary['%_Passing_Math'].round(2)
 school_summary['%_Passing_Reading'] = school_summary['%_Passing_Reading'].round(2)
 school_summary['%_Overall_Passing'] = school_summary['%_Overall_Passing'].round(2)
 
-
 print (school_summary)
 
-"""------------------------------------------HIGHEST PERFORMING SCHOOLS------------------------------------------"""
+"""------------------------------------------HIGHEST PERFORMING SCHOOLS----------------------------------------------"""
 
+top_schools = school_summary.sort_values(by='%_Overall_Passing', ascending=False).head(5)
+print(top_schools)
+
+
+"""------------------------------------------LOWEST PERFORMING SCHOOLS-----------------------------------------------"""
+
+bottom_schools = school_summary.sort_values(by='%_Overall_Passing').head(5)
+print(bottom_schools)
+
+"""------------------------------------------MATH SCORES BY GRADE-----------------------------------------------------"""
+
+# Use the code provided to separate the data by grade
+ninth_graders = school_data_complete[(school_data_complete["grade"] == "9th")]
+tenth_graders = school_data_complete[(school_data_complete["grade"] == "10th")]
+eleventh_graders = school_data_complete[(school_data_complete["grade"] == "11th")]
+twelfth_graders = school_data_complete[(school_data_complete["grade"] == "12th")]
+
+# Group by 'school_name' and take the mean of the 'math_score' column for each grade
+ninth_grade_math_scores = ninth_graders.groupby("school_name")["math_score"].mean()
+tenth_grade_math_scores = tenth_graders.groupby("school_name")["math_score"].mean()
+eleventh_grade_math_scores = eleventh_graders.groupby("school_name")["math_score"].mean()
+twelfth_grade_math_scores = twelfth_graders.groupby("school_name")["math_score"].mean()
+
+# Combine each of the scores above into a single DataFrame called 'math_scores_by_grade'
+math_scores_by_grade = pd.DataFrame({
+    '9th Grade': ninth_grade_math_scores,
+    '10th Grade': tenth_grade_math_scores,
+    '11th Grade': eleventh_grade_math_scores,
+    '12th Grade': twelfth_grade_math_scores
+})
+
+# Minor data wrangling
+math_scores_by_grade.index.name = 'School Name'
+
+# Display the DataFrame
+print(math_scores_by_grade)
+
+
+"""------------------------------------------READING SCORES BY GRADE---------------------------------------------------"""
+
+# Use the code provided to separate the data by grade
+ninth_graders = school_data_complete[(school_data_complete["grade"] == "9th")]
+tenth_graders = school_data_complete[(school_data_complete["grade"] == "10th")]
+eleventh_graders = school_data_complete[(school_data_complete["grade"] == "11th")]
+twelfth_graders = school_data_complete[(school_data_complete["grade"] == "12th")]
+
+# Group by `school_name` and take the mean of the `reading_score` column for each grade
+ninth_grade_reading_scores = ninth_graders.groupby("school_name")["reading_score"].mean()
+tenth_grade_reading_scores = tenth_graders.groupby("school_name")["reading_score"].mean()
+eleventh_grade_reading_scores = eleventh_graders.groupby("school_name")["reading_score"].mean()
+twelfth_grade_reading_scores = twelfth_graders.groupby("school_name")["reading_score"].mean()
+
+# Combine each of the scores above into a single DataFrame called `reading_scores_by_grade`
+reading_scores_by_grade = pd.DataFrame({
+    '9th Grade': ninth_grade_reading_scores,
+    '10th Grade': tenth_grade_reading_scores,
+    '11th Grade': eleventh_grade_reading_scores,
+    '12th Grade': twelfth_grade_reading_scores
+})
+
+# Minor data wrangling
+reading_scores_by_grade = reading_scores_by_grade[["9th Grade", "10th Grade", "11th Grade", "12th Grade"]]
+reading_scores_by_grade.index.name = 'School Name'
+
+# Display the DataFrame
+print(reading_scores_by_grade)
+
+
+"""------------------------------------------SCORES BY SCHOOL SPENDING-------------------------------------------------"""
+
+# Assuming merged_df is the merged DataFrame from above
+spending_bins = [0, 585, 630, 645, 680]
+labels = ["<$585", "$585-630", "$630-645", "$645-680"]
+
+school_data_complete['Spending Ranges (Per Student)'] = pd.cut(school_data_complete['budget'] / school_data_complete['size'], bins=spending_bins, labels=labels)
+
+spending_summary = school_data_complete.groupby('Spending Ranges (Per Student)').agg({
+    'math_score': 'mean',
+    'reading_score': 'mean',
+    'passing_math': 'mean',
+    'passing_reading': 'mean',
+    'passing_overall': 'mean'
+}).reset_index()
+
+print(spending_summary)
+
+
+"""-----------------------------------------SCORES BY SCHOOL SIZE--------------------------------------------------------"""
+
+# Assuming you have a per_school_summary DataFrame with 'Total Students' column
+size_bins = [0, 1000, 2000, 5000]
+labels = ["Small (<1000)", "Medium (1000-2000)", "Large (2000-5000)"]
+
+# Use pd.cut to categorize school size based on the bins
+school_data_complete['School_Size'] = pd.cut(school_data_complete['size'], bins=size_bins, labels=labels)
+
+# Group by 'School_Size' and calculate mean scores
+size_summary = school_data_complete.groupby('School_Size').agg({
+    'math_score': 'mean',
+    'reading_score': 'mean',
+    'passing_math': 'mean',
+    'passing_reading': 'mean',
+    'passing_overall': 'mean'
+}).reset_index()
+
+print(size_summary)
+
+
+"""-----------------------------------------------SCORES BY SCHOOL TYPE--------------------------------------------------"""
+
+# Assuming you have a school_summary DataFrame with 'School_Type' column
+type_summary = school_summary.groupby('School_Type').agg({
+    'Average_Math_Score': 'mean',
+    'Average_Reading_Score': 'mean',
+    '%_Passing_Math': 'mean',
+    '%_Passing_Reading': 'mean',
+    '%_Overall_Passing': 'mean'
+}).reset_index()
+
+print(type_summary)
+
+
+
+"""--------------------------------------------END OF ASSIGNMENT--------------------------------------------------------"""
