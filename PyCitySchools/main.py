@@ -16,7 +16,7 @@ school_data_complete.head()
 
 """---------------------------------------------DISTRICT SUMMARY------------------------------------------------------"""
 
-school_count = school_data_complete['school_name'].nunique()
+school_count = school_data_complete['School_ID'].nunique()
 print (school_count)
 
 student_count  = school_data_complete['Student_ID'].nunique()
@@ -60,6 +60,8 @@ district_summary = pd.DataFrame({
 print (district_summary)
 
 """--------------------------------------------------SCHOOL SUMMARY--------------------------------------------------"""
+school_name = school_data['school_name'].unique()
+print(school_name)
 
 school_type = school_data['type'].unique()
 print(school_type)
@@ -81,6 +83,7 @@ school_summary = school_data_complete.groupby(['school_name','type']).agg({
     'per_student_budget': 'first',
     'math_score': 'mean',
     'reading_score': 'mean',
+
     'passing_math': 'mean',
     'passing_reading': 'mean',
     'passing_overall': 'mean'
